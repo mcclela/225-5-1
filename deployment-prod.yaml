@@ -11,7 +11,7 @@ spec:
     - ReadWriteMany
   nfs:
     path:  /srv/nfs/mcclela        #local reference
-    server: 10.48.10.121
+    server: 10.48.10.140
   persistentVolumeReclaimPolicy: Retain
 ---
 apiVersion: v1
