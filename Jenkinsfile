@@ -18,6 +18,13 @@ pipeline {
             }
         }
 
+          stage('Lint HTML') {
+            steps {
+                sh 'npm install htmlhint --save-dev'
+                sh 'npx htmlhint *.html'
+            }
+        }
+
         stage('Build Docker Image') {
             steps {
                 script {
@@ -69,6 +76,31 @@ pipeline {
                     sh 'docker rm qa-tests || true'
                     sh 'docker build -t qa-tests -f Dockerfile.test .'
                     sh 'docker run qa-tests'
+                }
+            }
+        }
+
+         stage ("Run Security Checks") {
+            steps {
+                //                                                                 ###change the IP address in this section to your cluster IP address!!!!####
+                sh 'docker pull public.ecr.aws/portswigger/dastardly:latest'
+                sh '''
+                    docker run --user $(id -u) -v ${WORKSPACE}:${WORKSPACE}:rw \
+                    -e BURP_START_URL=http://10.48.10.121 \
+                    -e BURP_REPORT_FILE_PATH=${WORKSPACE}/dastardly-report.xml \
+                    public.ecr.aws/portswigger/dastardly:latest
+                '''
+            }
+        }
+        
+       stage('Deploy to Prod Environment') {
+            steps {
+                script {
+                    // Set up Kubernetes configuration using the specified KUBECONFIG
+                    //sh "ls -la"
+                    sh "sed -i 's|${DOCKER_IMAGE}:latest|${DOCKER_IMAGE}:${IMAGE_TAG}|' deployment-prod.yaml"
+                    sh "cd .."
+                    sh "kubectl apply -f deployment-prod.yaml"
                 }
             }
         }
