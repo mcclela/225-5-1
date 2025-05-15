@@ -16,5 +16,14 @@ def clear_test_contacts():
     print('Test contacts have been deleted from the database.')
     db.close()
 
+def delete_names_without_space():
+    """Delete contacts where the name has no spaces."""
+    db = connect_db()
+    db.execute("DELETE FROM contacts WHERE name NOT LIKE '% %'")
+    deleted = db.total_changes
+    db.commit()
+    print(f'Deleted {deleted} contacts with single-word names.')
+    db.close()
+    
 if __name__ == '__main__':
     clear_test_contacts()
