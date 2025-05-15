@@ -27,3 +27,4 @@ def delete_names_without_space():
     
 if __name__ == '__main__':
     clear_test_contacts()
+    delete_names_without_space()
